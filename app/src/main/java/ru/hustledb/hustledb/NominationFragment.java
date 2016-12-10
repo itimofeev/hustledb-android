@@ -37,8 +37,6 @@ public class NominationFragment extends Fragment implements RecyclerView.OnItemT
     RxBus bus;
     @BindView(R.id.nfSwipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
-//    @BindView(R.id.nfEmptyView)
-//    TextView nfEmptyView;
     @BindView(R.id.nfRecyclerView)
     RecyclerView recyclerView;
 
