@@ -12,8 +12,12 @@ import dagger.Module;
 import dagger.Provides;
 import ru.hustledb.hustledb.CompetitionsCache;
 import ru.hustledb.hustledb.DataProviders.LocalDb.CompetitionsOpenHelper;
+import ru.hustledb.hustledb.DataProviders.Retrofit.FakeIPP;
+import ru.hustledb.hustledb.DataProviders.Retrofit.FakeICP;
 import ru.hustledb.hustledb.DataProviders.Retrofit.InternetCompetitionsProvider;
 import ru.hustledb.hustledb.DataProviders.LocalDb.LocalCompetitionsProvider;
+import ru.hustledb.hustledb.DataProviders.Retrofit.InternetPreregistrationProvider;
+import ru.hustledb.hustledb.PreregistrationCache;
 import rx.schedulers.Schedulers;
 
 @Module
@@ -24,12 +28,29 @@ public class PersistenceModule {
         return CompetitionsCache.getInstance();
     }
     @Provides
-    InternetCompetitionsProvider provideInternerCompetitionsProvider(){
+    @Singleton
+    PreregistrationCache providePreregistrationsCache(){
+        return PreregistrationCache.getInstance();
+    }
+    @Provides
+    InternetCompetitionsProvider provideInternetCompetitionsProvider(){
         return new InternetCompetitionsProvider();
+    }
+//    @Provides
+//    InternetCompetitionsProvider provideInternetCompetitions(){
+//        return new FakeICP();
+//    }
+//    @Provides
+//    InternetPreregistrationProvider provideInternetPreregistration(){
+//        return new FakeIPP();
+//    }
+    @Provides
+    InternetPreregistrationProvider provideInternetPreregistration(){
+        return new InternetPreregistrationProvider();
     }
     @Provides
     @Singleton
-    LocalCompetitionsProvider localCompetitionsProvider(){
+    LocalCompetitionsProvider provideLocalCompetitions(){
         return new LocalCompetitionsProvider();
     }
     @Provides

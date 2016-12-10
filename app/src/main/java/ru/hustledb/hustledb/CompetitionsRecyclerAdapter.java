@@ -6,14 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.squareup.otto.Bus;
-
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import ru.hustledb.hustledb.ValueClasses.Competition;
 import rx.Observer;
 
 class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyclerAdapter.ViewHolder>
@@ -43,15 +42,16 @@ class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyc
     }
 
     final static class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.ciTitle)
         TextView title;
+        @BindView(R.id.ciDate)
         TextView date;
+        @BindView(R.id.ciLine)
         View line;
 
         ViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.ciTitle);
-            date = (TextView) view.findViewById(R.id.ciDate);
-            line = view.findViewById(R.id.ciLine);
+            ButterKnife.bind(this, view);
         }
     }
 

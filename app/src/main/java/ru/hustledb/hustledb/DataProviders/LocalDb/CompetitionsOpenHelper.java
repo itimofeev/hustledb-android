@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import ru.hustledb.hustledb.Competition;
+import ru.hustledb.hustledb.ValueClasses.Competition;
 
 public class CompetitionsOpenHelper extends SQLiteOpenHelper{
     private static final int DB_VERSION = 1;

@@ -1,30 +1,39 @@
 package ru.hustledb.hustledb;
 
+import android.support.v4.widget.SwipeRefreshLayout;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.hustledb.hustledb.ValueClasses.Competition;
 import rx.Observable;
 import rx.Observer;
 
-public class CompetitionsCache implements Observer<List<Competition>> {
+public class CompetitionsCache implements Observer<List<Competition>>{
+
     private List<Competition> competitions;
     private List<Observer<List<Competition>>> observers;
     private static CompetitionsCache INSTANCE = new CompetitionsCache();
-    private CompetitionsCache(){
+
+    private CompetitionsCache() {
         competitions = new ArrayList<>();
         observers = new ArrayList<>();
     }
-    public static CompetitionsCache getInstance(){
+
+    public static CompetitionsCache getInstance() {
         return INSTANCE;
     }
-    void registerObserver(Observer<List<Competition>> observer){
+
+    void registerObserver(Observer<List<Competition>> observer) {
         observer.onNext(this.competitions);
         observers.add(observer);
     }
-    void unregisterObserver(Observer<List<Competition>> observer){
+
+    void unregisterObserver(Observer<List<Competition>> observer) {
         observers.remove(observer);
     }
+
     @Override
     public void onCompleted() {
     }
@@ -44,10 +53,11 @@ public class CompetitionsCache implements Observer<List<Competition>> {
     }
 
     Competition getCompetitionById(int id) {
-        for(Competition c: competitions){
-            if(c.getId() == id)
+        for (Competition c : competitions) {
+            if (c.getId() == id)
                 return c;
         }
         throw new AssertionError();
     }
+
 }

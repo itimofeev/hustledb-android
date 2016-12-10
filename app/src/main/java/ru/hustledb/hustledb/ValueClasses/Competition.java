@@ -1,4 +1,4 @@
-package ru.hustledb.hustledb;
+package ru.hustledb.hustledb.ValueClasses;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -22,7 +22,7 @@ public class Competition implements Comparable<Competition> {
     public static final String DESCRIPTION = "desc";
     public static final String CITY = "city";
 
-    static final SimpleDateFormat dateFormat;
+    public static final SimpleDateFormat dateFormat;
     static {
         dateFormat = new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ss");
@@ -32,8 +32,7 @@ public class Competition implements Comparable<Competition> {
     private final String url;
     private final String title;
     private final String date;
-    private final String desc
-            ;
+    private final String desc;
     private final String city;
 
     public Competition(

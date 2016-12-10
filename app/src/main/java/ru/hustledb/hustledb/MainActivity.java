@@ -1,6 +1,9 @@
 package ru.hustledb.hustledb;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,64 +22,83 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.squareup.otto.Bus;
-
 import javax.inject.Inject;
 
-import ru.hustledb.hustledb.DataProviders.Retrofit.InternetCompetitionsProvider;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ru.hustledb.hustledb.DataProviders.LocalDb.LocalCompetitionsProvider;
-import ru.hustledb.hustledb.Events.OnLoadCompleteEvent;
+import ru.hustledb.hustledb.DataProviders.Retrofit.InternetCompetitionsProvider;
+import ru.hustledb.hustledb.DataProviders.Retrofit.InternetPreregistrationProvider;
+import ru.hustledb.hustledb.Events.OnCompetitionsLoadCompleteEvent;
+import ru.hustledb.hustledb.Events.OnPreregistrationLoadCompleteEvent;
+import ru.hustledb.hustledb.ValueClasses.Competition;
+import rx.subscriptions.CompositeSubscription;
+
+import static ru.hustledb.hustledb.R.id.toolbar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, CompetitionsListFragment.CompetitionsListListener {
+        implements CompetitionsListFragment.CompetitionsListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     @Inject
-    Bus bus;
+    RxBus bus;
     @Inject
     CompetitionsCache competitionsCache;
+    @Inject
+    PreregistrationCache preregistrationCache;
     @Inject
     InternetCompetitionsProvider internetCompetitionsProvider;
     @Inject
     LocalCompetitionsProvider localCompetitionsProvider;
+    @Inject
+    InternetPreregistrationProvider internetPreregistrationProvider;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    private CompositeSubscription subscriptions;
 
     private static final String COMPETITIONS_LIST_FRAGMENT_TAG = "competitionsListFragment";
     private static final String COMPETITIONS_DETAILS_FRAGMENT_TAG = "competitionDetailFragment";
+//    private static final String PREREGISTRATION_FRAGMENT_TAG = "preregistrationFragment";
+    private static final String NOMINATION_FRAGMENT_TAG = "nominationFragment";
     private CompetitionsListFragment competitionsListFragment;
     private CompetitionDetailsFragment competitionDetailsFragment;
+//    private PreregistrationFragment preregistrationFragment;
+    private NominationFragment nominationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         App.getAppComponent().inject(this);
+        setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        subscriptions = new CompositeSubscription();
+        subscriptions.add(bus.asObservable()
+                .subscribe(o -> {
+//                    if (o instanceof OnPreregistrationLoadCompleteEvent) {
+//                        onPreregistrationDownloaded((OnPreregistrationLoadCompleteEvent) o);
+//                    }
+                })
+        );
         localCompetitionsProvider.getCompetitionsObservable().subscribe(competitionsCache);
         updateCompetitions();
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        if(competitionsListFragment == null){
+        if (competitionsListFragment == null) {
             competitionsListFragment = CompetitionsListFragment.newInstance();
         }
         showFragment(competitionsListFragment, COMPETITIONS_LIST_FRAGMENT_TAG, false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptions.clear();
     }
     private void showFragment(Fragment fragment, String tag, boolean addToBackstack) {
         if (!fragment.isVisible()) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.a_mCoordinatorLayout, fragment, tag);
-            if(addToBackstack){
+            if (addToBackstack) {
                 transaction.addToBackStack(null);
             }
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
@@ -83,14 +106,44 @@ public class MainActivity extends AppCompatActivity
             //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         }
     }
+
+    private boolean hasConnection() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
+
+    public void updateCompetitions() {
+        if (hasConnection()) {
+            internetCompetitionsProvider.getCompetitionsObservable().subscribe(localCompetitionsProvider);
+        } else {
+            Toast.makeText(this, "Нет подключения к Интернет!", Toast.LENGTH_SHORT).show();
+            if (bus.hasObservers()) {
+                bus.send(new OnCompetitionsLoadCompleteEvent(false));
+            }
+        }
+    }
+
+    public void updatePreregistration(Integer f_competition_id) {
+        if (hasConnection()) {
+            if (f_competition_id == null) {
+                f_competition_id = preregistrationCache.getCurrentPreregistrationId();
+            }
+            internetPreregistrationProvider.getPreregistrationObservable(f_competition_id).subscribe(preregistrationCache);
+        } else {
+            Toast.makeText(this, "Нет подключения к Интернет!", Toast.LENGTH_SHORT).show();
+            if (bus.hasObservers()) {
+                bus.send(new OnPreregistrationLoadCompleteEvent(false));
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+        super.onBackPressed();
     }
 
     @Override
@@ -110,59 +163,55 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
     @Override
     public void onCompetitionClicked(Competition competition) {
-        if(competitionDetailsFragment == null){
+        updatePreregistration(competition.getId());
+        if (competitionDetailsFragment == null) {
             competitionDetailsFragment = CompetitionDetailsFragment.newInstance(competition);
         } else {
             competitionDetailsFragment.setCompetition(competition);
         }
+        toolbar.setLogo(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        toolbar.setTitle(competition.getTitle());
         showFragment(competitionDetailsFragment, COMPETITIONS_DETAILS_FRAGMENT_TAG, true);
     }
-    private boolean hasConnection(){
-        ConnectivityManager cm =
-                (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+    @Override
+    public void onPreregistrationInfoClicked(int f_competition_id) {
+        updatePreregistration(f_competition_id);
     }
-    public void updateCompetitions(){
-        if(hasConnection()) {
-            internetCompetitionsProvider.getCompetitionsObservable().subscribe(localCompetitionsProvider);
-        } else {
-            Toast.makeText(this, "Нет подключения к Интернет!", Toast.LENGTH_SHORT).show();
-            bus.post(new OnLoadCompleteEvent());
+
+//    public void onPreregistrationDownloaded(OnPreregistrationLoadCompleteEvent event) {
+//        if (competitionDetailsFragment.isVisible()) {
+//            if (!event.isError()) {
+//                if (preregistrationFragment == null) {
+//                    preregistrationFragment = PreregistrationFragment.newInstance();
+//                }
+//                showFragment(preregistrationFragment, PREREGISTRATION_FRAGMENT_TAG, true);
+//            } else {
+//                Toast.makeText(this, "Произошла ошибка загрузки", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
+    @Override
+    public void onBackToMain(){
+        //toolbar.setLogo(R.mipmap.logo);
+        toolbar.setTitle("HustleDb");
+    }
+    @Override
+    public void onNominationClicked() {
+        if (nominationFragment == null) {
+            nominationFragment = NominationFragment.newInstance();
         }
+        showFragment(nominationFragment, NOMINATION_FRAGMENT_TAG, true);
     }
 
     @Override
     public void onRefresh() {
-        updateCompetitions();
+        if (competitionsListFragment.isVisible()) {
+            updateCompetitions();
+        } else {
+            updatePreregistration(null);
+        }
     }
 }
