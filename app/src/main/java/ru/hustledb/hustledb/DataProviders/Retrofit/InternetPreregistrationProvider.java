@@ -13,7 +13,7 @@ import rx.schedulers.Schedulers;
  */
 
 public class InternetPreregistrationProvider {
-    private static final String API_URL = "http://188.166.26.165:18080/";
+    private static final String API_URL = "http://188.166.26.165/";
 
     public Observable<Preregistration> getPreregistrationObservable(int f_competition_id) {
 

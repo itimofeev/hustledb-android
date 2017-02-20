@@ -9,7 +9,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,17 +22,15 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.hustledb.hustledb.Events.OnCompetitionsLoadCompleteEvent;
-import ru.hustledb.hustledb.ValueClasses.Competition;
+import ru.hustledb.hustledb.ValueClasses.Contest;
 import rx.subscriptions.CompositeSubscription;
 
-import static ru.hustledb.hustledb.R.id.toolbar;
-
-public class CompetitionsListFragment extends Fragment implements RecyclerView.OnItemTouchListener {
+public class ContestsListFragment extends Fragment implements RecyclerView.OnItemTouchListener {
 
     @Inject
     RxBus bus;
     @Inject
-    CompetitionsCache competitionsCache;
+    ContestsCache contestsCache;
     @BindView(R.id.fclRecyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.fclSwipeRefreshLayout)
@@ -42,16 +39,16 @@ public class CompetitionsListFragment extends Fragment implements RecyclerView.O
     private CompositeSubscription subscriptions;
 
     private CompetitionsListener listener;
-    private CompetitionsRecyclerAdapter competitionsAdapter;
+    private ContestsRecyclerAdapter competitionsAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private GestureDetectorCompat gestureDetector;
 
 
-    public static CompetitionsListFragment newInstance() {
-        return new CompetitionsListFragment();
+    public static ContestsListFragment newInstance() {
+        return new ContestsListFragment();
     }
 
-    public CompetitionsListFragment() {
+    public ContestsListFragment() {
     }
 
     @Override
@@ -91,12 +88,12 @@ public class CompetitionsListFragment extends Fragment implements RecyclerView.O
         mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(true);
-        competitionsAdapter = new CompetitionsRecyclerAdapter(null);
+        competitionsAdapter = new ContestsRecyclerAdapter(null);
         recyclerView.setAdapter(competitionsAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addOnItemTouchListener(this);
         gestureDetector = new GestureDetectorCompat(getActivity(), new RecyclerViewOnGestureListener());
-        competitionsCache.registerObserver(competitionsAdapter);
+        contestsCache.registerObserver(competitionsAdapter);
     }
 
     @Override
@@ -121,7 +118,7 @@ public class CompetitionsListFragment extends Fragment implements RecyclerView.O
     @Override
     public void onStop() {
         super.onStop();
-        competitionsCache.unregisterObserver(competitionsAdapter);
+        contestsCache.unregisterObserver(competitionsAdapter);
         subscriptions.clear();
     }
 
@@ -151,7 +148,7 @@ public class CompetitionsListFragment extends Fragment implements RecyclerView.O
         public boolean onSingleTapConfirmed(MotionEvent event) {
             View view = recyclerView.findChildViewUnder(event.getX(), event.getY());
             if (view != null) {
-                listener.onCompetitionClicked(competitionsCache.getCompetitionById((int) view.getTag()));
+                listener.onCompetitionClicked(contestsCache.getCompetitionById((int) view.getTag()));
             }
             return super.onSingleTapConfirmed(event);
         }
@@ -173,7 +170,7 @@ public class CompetitionsListFragment extends Fragment implements RecyclerView.O
 
         void onBackToMain();
 
-        void onCompetitionClicked(Competition competition);
+        void onCompetitionClicked(Contest contest);
 
         void onPreregistrationInfoClicked(int f_competition_id);
 

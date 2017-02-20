@@ -10,12 +10,11 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import ru.hustledb.hustledb.CompetitionsCache;
-import ru.hustledb.hustledb.DataProviders.LocalDb.CompetitionsOpenHelper;
+import ru.hustledb.hustledb.ContestsCache;
+import ru.hustledb.hustledb.DataProviders.LocalDb.ContestsOpenHelper;
 import ru.hustledb.hustledb.DataProviders.Retrofit.FakeIPP;
-import ru.hustledb.hustledb.DataProviders.Retrofit.FakeICP;
-import ru.hustledb.hustledb.DataProviders.Retrofit.InternetCompetitionsProvider;
-import ru.hustledb.hustledb.DataProviders.LocalDb.LocalCompetitionsProvider;
+import ru.hustledb.hustledb.DataProviders.Retrofit.InternetContestsProvider;
+import ru.hustledb.hustledb.DataProviders.LocalDb.LocalContestsProvider;
 import ru.hustledb.hustledb.DataProviders.Retrofit.InternetPreregistrationProvider;
 import ru.hustledb.hustledb.PreregistrationCache;
 import rx.schedulers.Schedulers;
@@ -24,8 +23,8 @@ import rx.schedulers.Schedulers;
 public class PersistenceModule {
     @Provides
     @Singleton
-    CompetitionsCache provideCompetitionsCache(){
-        return CompetitionsCache.getInstance();
+    ContestsCache provideCompetitionsCache(){
+        return ContestsCache.getInstance();
     }
     @Provides
     @Singleton
@@ -33,25 +32,25 @@ public class PersistenceModule {
         return PreregistrationCache.getInstance();
     }
     @Provides
-    InternetCompetitionsProvider provideInternetCompetitionsProvider(){
-        return new InternetCompetitionsProvider();
+    InternetContestsProvider provideInternetCompetitionsProvider(){
+        return new InternetContestsProvider();
     }
 //    @Provides
-//    InternetCompetitionsProvider provideInternetCompetitions(){
+//    InternetContestsProvider provideInternetCompetitions(){
 //        return new FakeICP();
-//    }
-//    @Provides
-//    InternetPreregistrationProvider provideInternetPreregistration(){
-//        return new FakeIPP();
 //    }
     @Provides
     InternetPreregistrationProvider provideInternetPreregistration(){
-        return new InternetPreregistrationProvider();
+        return new FakeIPP();
     }
+//    @Provides
+//    InternetPreregistrationProvider provideInternetPreregistration(){
+//        return new InternetPreregistrationProvider();
+//    }
     @Provides
     @Singleton
-    LocalCompetitionsProvider provideLocalCompetitions(){
-        return new LocalCompetitionsProvider();
+    LocalContestsProvider provideLocalCompetitions(){
+        return new LocalContestsProvider();
     }
     @Provides
     @Singleton
@@ -60,14 +59,14 @@ public class PersistenceModule {
     }
     @Provides
     @Singleton
-    BriteDatabase provideBriteDatabase(SqlBrite sqlBrite, CompetitionsOpenHelper competitionsOpenHelper){
-        BriteDatabase db = sqlBrite.wrapDatabaseHelper(competitionsOpenHelper, Schedulers.io());
+    BriteDatabase provideBriteDatabase(SqlBrite sqlBrite, ContestsOpenHelper contestsOpenHelper){
+        BriteDatabase db = sqlBrite.wrapDatabaseHelper(contestsOpenHelper, Schedulers.io());
         db.setLoggingEnabled(true);
         return db;
     }
     @Provides
     @Singleton
-    CompetitionsOpenHelper provideCompetitionsOpenHelper(Context context){
-        return new CompetitionsOpenHelper(context);
+    ContestsOpenHelper provideCompetitionsOpenHelper(Context context){
+        return new ContestsOpenHelper(context);
     }
 }

@@ -9,6 +9,11 @@ import java.util.List;
  * Created by sergey on 18.11.16.
  */
 public class Dancer {
+    public static final String TABLE_NAME = "dancers$";
+    public static final String CODE_ASH = "code_ash";
+    public static final String DANCER_CLASS = "dancer_class";
+    public static final String TITLE = "dancer_title";
+
     private final String code_ash;
     private final String dancer_class;
     private final String title;

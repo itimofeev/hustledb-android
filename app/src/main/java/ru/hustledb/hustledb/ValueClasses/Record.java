@@ -7,6 +7,11 @@ import android.support.annotation.Nullable;
  */
 
 public class Record {
+    public static final String TABLE_NAME = "records$";
+    public static final String INDEX = "indeks";
+    public static final String DANCER_1 = "dancer_1";
+    public static final String DANCER_2 = "dancer_2";
+
     private final int index;
     private final Dancer dancer_1;
     private final Dancer dancer_2;

@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import javax.inject.Inject;
@@ -42,7 +41,7 @@ public class NominationFragment extends Fragment implements RecyclerView.OnItemT
 
 
     private CompositeSubscription subscriptions;
-    private CompetitionsListFragment.CompetitionsListener listener;
+    private ContestsListFragment.CompetitionsListener listener;
     private RecyclerView.LayoutManager layoutManager;
     private NominationRecyclerAdapter recyclerAdapter;
     private GestureDetectorCompat gestureDetector;
@@ -55,8 +54,8 @@ public class NominationFragment extends Fragment implements RecyclerView.OnItemT
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof CompetitionsListFragment.CompetitionsListener) {
-            listener = (CompetitionsListFragment.CompetitionsListener) context;
+        if (context instanceof ContestsListFragment.CompetitionsListener) {
+            listener = (ContestsListFragment.CompetitionsListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");

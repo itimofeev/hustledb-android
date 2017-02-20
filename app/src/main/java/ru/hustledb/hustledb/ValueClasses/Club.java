@@ -5,6 +5,9 @@ package ru.hustledb.hustledb.ValueClasses;
  */
 
 public class Club {
+    public static final String TABLE_NAME = "clubs$";
+    public static final String TITLE = "title";
+
     private final String title;
 
     public Club(String title){

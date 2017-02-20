@@ -11,23 +11,26 @@ import java.util.List;
  */
 
 public class Preregistration {
+    public static final String TABLE_NAME = "preregistrations$";
+    public static final String ID = "id";
+    public static final String F_COMPETITION_ID = "f_competition_id";
 
     private final String id;
     private final int f_competition_id;
     private List<Nomination> nominations;
-    private Competition competition;
+    private Contest contest;
 
     public Preregistration(String id, int f_competition_id, @NonNull List<Nomination> nominations,
-                           @Nullable Competition competition){
+                           @Nullable Contest contest){
         this.id = id;
         this.f_competition_id = f_competition_id;
         this.nominations = new ArrayList<>(nominations.size());
         this.nominations.addAll(nominations);
-        this.competition = competition;
+        this.contest = contest;
     }
 
-    public void setCompetition(Competition competition){
-        this.competition = competition;
+    public void setContest(Contest contest){
+        this.contest = contest;
     }
     public void setNominations(@NonNull List<Nomination> nominations){
         this.nominations.clear();

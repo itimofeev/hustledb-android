@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,33 +16,24 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.hustledb.hustledb.Events.OnPreregistrationLoadCompleteEvent;
-import ru.hustledb.hustledb.ValueClasses.Competition;
+import ru.hustledb.hustledb.ValueClasses.Contest;
 import rx.subscriptions.CompositeSubscription;
 
 import static android.view.View.GONE;
-import static android.view.View.SCROLL_AXIS_HORIZONTAL;
 
-public class CompetitionDetailsFragment extends Fragment implements RecyclerView.OnItemTouchListener {
-    private static final String C_ID = "competitionId";
-    private static final String C_URL = "competitionUrl";
-    private static final String C_TITLE = "competitionTitle";
-    private static final String C_DATE = "competitionDate";
-    private static final String C_CITY = "competitionCity";
-    private static final String C_DESC = "competitionDesc";
+public class ContestDetailsFragment extends Fragment implements RecyclerView.OnItemTouchListener {
 
-    private Competition competition;
+    private Contest contest;
     private CompositeSubscription subscriptions;
-    private CompetitionsListFragment.CompetitionsListener listener;
+    private ContestsListFragment.CompetitionsListener listener;
     private RecyclerView.LayoutManager layoutManager;
     private PreregistrationRecyclerAdapter recyclerAdapter;
     private GestureDetectorCompat gestureDetector;
@@ -63,47 +53,31 @@ public class CompetitionDetailsFragment extends Fragment implements RecyclerView
     @BindView(R.id.dtRecyclerView)
     RecyclerView dtRecyclerView;
     @Inject
+    ContestsCache contestsCache;
+    @Inject
     PreregistrationCache preregistrationCache;
     @Inject
     RxBus bus;
 
-    public CompetitionDetailsFragment() {
+    public ContestDetailsFragment() {
         // Required empty public constructor
     }
-
-    public static CompetitionDetailsFragment newInstance(Competition competition) {
-        CompetitionDetailsFragment fragment = new CompetitionDetailsFragment();
-        Bundle args = new Bundle();
-        args.putInt(C_ID, competition.getId());
-        args.putString(C_URL, competition.getUrl());
-        args.putString(C_TITLE, competition.getTitle());
-        args.putString(C_DATE, competition.getDate());
-        args.putString(C_CITY, competition.getCity());
-        args.putString(C_DESC, competition.getDesc());
-        fragment.setArguments(args);
-        return fragment;
+    public static ContestDetailsFragment newInstance() {
+        return new ContestDetailsFragment();
     }
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (!(context instanceof CompetitionsListFragment.CompetitionsListener)) {
-            throw new IllegalArgumentException("Parent activity must implement" + CompetitionsListFragment.CompetitionsListener.class);
+        if (!(context instanceof ContestsListFragment.CompetitionsListener)) {
+            throw new IllegalArgumentException("Parent activity must implement" + ContestsListFragment.CompetitionsListener.class);
         }
-        listener = (CompetitionsListFragment.CompetitionsListener) context;
+        listener = (ContestsListFragment.CompetitionsListener) context;
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         App.getAppComponent().inject(this);
-        if (getArguments() != null && competition == null) {
-            Bundle bundle = getArguments();
-            competition = new Competition(bundle.getInt(C_ID),
-                    bundle.getString(C_URL),
-                    bundle.getString(C_TITLE),
-                    bundle.getString(C_DATE),
-                    bundle.getString(C_DESC),
-                    bundle.getString(C_CITY));
-        }
+        contest = ContestsCache.getInstance().getSelectedContest();
     }
 
     @Override
@@ -111,7 +85,7 @@ public class CompetitionDetailsFragment extends Fragment implements RecyclerView
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_competition_details, container, false);
         ButterKnife.bind(this, view);
-//        displayPreregistrationInfo.setOnClickListener(v -> listener.onPreregistrationInfoClicked(competition.getId()));
+//        displayPreregistrationInfo.setOnClickListener(v -> listener.onPreregistrationInfoClicked(contest.getId()));
         return view;
     }
     @Override
@@ -127,7 +101,7 @@ public class CompetitionDetailsFragment extends Fragment implements RecyclerView
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(dtRecyclerView.getContext(),
                 LinearLayout.VERTICAL);
         dtRecyclerView.addItemDecoration(dividerItemDecoration);
-        gestureDetector = new GestureDetectorCompat(getActivity(), new CompetitionDetailsFragment.RecyclerViewOnGestureListener());
+        gestureDetector = new GestureDetectorCompat(getActivity(), new ContestDetailsFragment.RecyclerViewOnGestureListener());
     }
     @Override
     public void onResume() {
@@ -141,33 +115,33 @@ public class CompetitionDetailsFragment extends Fragment implements RecyclerView
                     }
                 })
         );
-        if(!competition.getTitle().equals("")) {
+        if(!contest.getTitle().equals("")) {
             ((View) dtTitle.getParent()).setVisibility(View.VISIBLE);
-            if(!competition.getUrl().equals("")){
-                dtTitle.setMovementMethod(LinkMovementMethod.getInstance());
-                String link = "<a href=" + competition.getUrl() + ">" +
-                        competition.getTitle() + "</a>";
-                dtTitle.setText(Html.fromHtml(link));
-            } else {
-                dtTitle.setText(competition.getTitle());
-            }
+//            if(!contest.getUrl().equals("")){
+//                dtTitle.setMovementMethod(LinkMovementMethod.getInstance());
+//                String link = "<a href=" + contest.getUrl() + ">" +
+//                        contest.getTitle() + "</a>";
+//                dtTitle.setText(Html.fromHtml(link));
+//            } else {
+                dtTitle.setText(contest.getTitle());
+//            }
         } else {
             ((View) dtTitle.getParent()).setVisibility(GONE);
         }
-        if(!competition.getCity().equals("")){
-            dtCity.setText(competition.getCity());
+        if(!contest.getCityName().equals("")){
+            dtCity.setText(contest.getCityName());
             ((View) dtCity.getParent()).setVisibility(View.VISIBLE);
         } else {
             ((View) dtCity.getParent()).setVisibility(GONE);
         }
-        if(!competition.getDate().equals("")) {
-            dtDate.setText(competition.getPrettyDate());
+        if(!contest.getDate().equals("")) {
+            dtDate.setText(contest.getPrettyDate());
             ((View) dtDate.getParent()).setVisibility(View.VISIBLE);
         } else {
             ((View) dtDate.getParent()).setVisibility(GONE);
         }
-        if(!competition.getDesc().equals("")) {
-            dtDesc.setText(competition.getDesc());
+        if(!contest.getCommonInfo().equals("")) {
+            dtDesc.setText(contest.getCommonInfo());
             ((View) dtDesc.getParent()).setVisibility(View.VISIBLE);
         } else {
             ((View) dtDesc.getParent()).setVisibility(GONE);
@@ -182,8 +156,8 @@ public class CompetitionDetailsFragment extends Fragment implements RecyclerView
         subscriptions.unsubscribe();
     }
 
-    public void setCompetition(Competition competition) {
-        this.competition = competition;
+    public void setContest(Contest contest) {
+        this.contest = contest;
     }
 
     @Override

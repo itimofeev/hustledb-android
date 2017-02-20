@@ -10,6 +10,10 @@ import java.util.List;
  */
 
 public class Nomination {
+
+    public static final String TABLE_NAME = "nominations$";
+    public static final String TITLE = "title";
+
     private final String title;
     private List<Record> records;
     public Nomination(String title, @NonNull List<Record> records){

@@ -8,6 +8,7 @@ import ru.hustledb.hustledb.Dagger.DaggerAppComponent;
 
 public class App extends Application {
 
+    public static final String DATABASE_NAME = "vHustle";
     private static AppComponent APP_COMPONENT;
 
     @Override
@@ -20,4 +21,5 @@ public class App extends Application {
     public static AppComponent getAppComponent(){
         return APP_COMPONENT;
     }
+
 }

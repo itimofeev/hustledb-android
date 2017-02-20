@@ -12,16 +12,16 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import ru.hustledb.hustledb.ValueClasses.Competition;
+import ru.hustledb.hustledb.ValueClasses.Contest;
 import rx.Observer;
 
-class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyclerAdapter.ViewHolder>
-        implements Observer<List<Competition>>{
+class ContestsRecyclerAdapter extends RecyclerView.Adapter<ContestsRecyclerAdapter.ViewHolder>
+        implements Observer<List<Contest>>{
 
-    private List<Competition> competitions;
+    private List<Contest> contests;
 
-    CompetitionsRecyclerAdapter(List<Competition> competitions) {
-        this.competitions = competitions;
+    ContestsRecyclerAdapter(List<Contest> contests) {
+        this.contests = contests;
     }
 
     @Override
@@ -31,13 +31,13 @@ class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyc
 
     @Override
     public void onError(Throwable e) {
-        competitions.clear();
+        contests.clear();
     }
 
     // TODO: 06.11.16 Dont just replace the whole list, but add the missing and remove the obsolete
     @Override
-    public void onNext(List<Competition> competitions) {
-        this.competitions = competitions;
+    public void onNext(List<Contest> contests) {
+        this.contests = contests;
         notifyDataSetChanged();
     }
 
@@ -56,19 +56,19 @@ class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyc
     }
 
     @Override
-    public CompetitionsRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ContestsRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.competition_item, parent, false);
-        return new CompetitionsRecyclerAdapter.ViewHolder(view);
+        return new ContestsRecyclerAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(CompetitionsRecyclerAdapter.ViewHolder holder, int position) {
-        holder.itemView.setTag(competitions.get(position).getId());
-        holder.title.setText(competitions.get(position).getTitle());
-        holder.date.setText(competitions.get(position).getPrettyDate());
+    public void onBindViewHolder(ContestsRecyclerAdapter.ViewHolder holder, int position) {
+        holder.itemView.setTag(contests.get(position).getId());
+        holder.title.setText(contests.get(position).getTitle());
+        holder.date.setText(contests.get(position).getPrettyDate());
         try {
-            String stringDate = competitions.get(position).getDate();
-            Date date = Competition.dateFormat.parse(stringDate);
+            String stringDate = contests.get(position).getDate();
+            Date date = Contest.dateFormat.parse(stringDate);
             Date now = new Date();
             if(date.compareTo(now) > 0){
                 holder.line.setBackgroundColor(0xff76ff03);
@@ -82,6 +82,6 @@ class CompetitionsRecyclerAdapter extends RecyclerView.Adapter<CompetitionsRecyc
 
     @Override
     public int getItemCount() {
-        return competitions==null? 0 : competitions.size();
+        return contests ==null? 0 : contests.size();
     }
 }
