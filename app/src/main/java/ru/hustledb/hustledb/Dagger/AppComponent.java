@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 import ru.hustledb.hustledb.ContestDetailsFragment;
 import ru.hustledb.hustledb.ContestsListFragment;
+import ru.hustledb.hustledb.ContestsSublistFragment;
 import ru.hustledb.hustledb.DataProviders.LocalDb.LocalContestsProvider;
 import ru.hustledb.hustledb.DataProviders.LocalDb.LocalDbModel;
 import ru.hustledb.hustledb.DataProviders.LocalDb.LocalPreregistrationProvider;
@@ -30,4 +31,6 @@ public interface AppComponent {
     void inject(ContestDetailsFragment contestDetailsFragment);
 
     void inject(NominationRecyclerAdapter nominationRecyclerAdapter);
+
+    void inject(ContestsSublistFragment contestsSublistFragment);
 }

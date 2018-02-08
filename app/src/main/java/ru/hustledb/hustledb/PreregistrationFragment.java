@@ -36,7 +36,7 @@ public class PreregistrationFragment extends Fragment implements RecyclerView.On
     RecyclerView recyclerView;
 
     private CompositeSubscription subscriptions;
-    private ContestsListFragment.CompetitionsListener listener;
+    private ContestsSublistFragment.CompetitionsListener listener;
     private RecyclerView.LayoutManager layoutManager;
     private PreregistrationRecyclerAdapter recyclerAdapter;
     private GestureDetectorCompat gestureDetector;
@@ -51,8 +51,8 @@ public class PreregistrationFragment extends Fragment implements RecyclerView.On
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof ContestsListFragment.CompetitionsListener) {
-            listener = (ContestsListFragment.CompetitionsListener) context;
+        if (context instanceof ContestsSublistFragment.CompetitionsListener) {
+            listener = (ContestsSublistFragment.CompetitionsListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");

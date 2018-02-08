@@ -1,48 +1,30 @@
 package ru.hustledb.hustledb;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.GestureDetector;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import ru.hustledb.hustledb.Events.OnCompetitionsLoadCompleteEvent;
-import ru.hustledb.hustledb.ValueClasses.Contest;
-import rx.subscriptions.CompositeSubscription;
 
-public class ContestsListFragment extends Fragment implements RecyclerView.OnItemTouchListener {
-
-    @Inject
-    RxBus bus;
+public class ContestsListFragment extends Fragment {
+    @BindView(R.id.fclViewPager)
+    ViewPager pager;
+    @BindView(R.id.fclTabs)
+    TabLayout tabLayout;
+    PagerAdapter pagerAdapter;
     @Inject
     ContestsCache contestsCache;
-    @BindView(R.id.fclRecyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.fclSwipeRefreshLayout)
-    SwipeRefreshLayout swipeRefreshLayout;
-
-    private CompositeSubscription subscriptions;
-
-    private CompetitionsListener listener;
-    private ContestsRecyclerAdapter competitionsAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
-    private GestureDetectorCompat gestureDetector;
-
 
     public static ContestsListFragment newInstance() {
         return new ContestsListFragment();
@@ -52,128 +34,66 @@ public class ContestsListFragment extends Fragment implements RecyclerView.OnIte
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (!(context instanceof CompetitionsListener)) {
-            throw new IllegalArgumentException("Parent activity must implement" + CompetitionsListener.class);
-        }
-        listener = (CompetitionsListener) context;
-        //setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         App.getAppComponent().inject(this);
     }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_competitions_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_contests_list, container, false);
         ButterKnife.bind(this, view);
+        pagerAdapter = new MyFragmentPagerAdapter(getChildFragmentManager());
+        pager.setAdapter(pagerAdapter);
+        tabLayout.setupWithViewPager(pager);
+//        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//        tabs.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageSelected(int position) {
+//                Log.d("FCL_TAG", "onPageSelected, position = " + position);
+//            }
+//
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset,
+//                                       int positionOffsetPixels) {
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//            }
+//        });
         return view;
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        swipeRefreshLayout.setOnRefreshListener(listener);
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setHasFixedSize(true);
-        competitionsAdapter = new ContestsRecyclerAdapter(null);
-        recyclerView.setAdapter(competitionsAdapter);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.addOnItemTouchListener(this);
-        gestureDetector = new GestureDetectorCompat(getActivity(), new RecyclerViewOnGestureListener());
-        contestsCache.registerObserver(competitionsAdapter);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        subscriptions = new CompositeSubscription();
-        subscriptions.add(bus.asObservable()
-                .subscribe(o -> {
-                    if (o instanceof OnCompetitionsLoadCompleteEvent) {
-                        onLoadComplete((OnCompetitionsLoadCompleteEvent) o);
-                    }
-                })
-        );
-    }
+    private class MyFragmentPagerAdapter extends FragmentPagerAdapter {
+        private int lastItemsNum = 0;
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        listener.onBackToMain();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        contestsCache.unregisterObserver(competitionsAdapter);
-        subscriptions.clear();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-        gestureDetector.onTouchEvent(e);
-        return false;
-    }
-
-    @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-
-    }
-
-    @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-    }
-
-    private class RecyclerViewOnGestureListener extends GestureDetector.SimpleOnGestureListener {
+        public MyFragmentPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
         @Override
-        public boolean onSingleTapConfirmed(MotionEvent event) {
-            View view = recyclerView.findChildViewUnder(event.getX(), event.getY());
-            if (view != null) {
-                listener.onCompetitionClicked(contestsCache.getCompetitionById((int) view.getTag()));
+        public CharSequence getPageTitle(int position) {
+            return contestsCache.getYearAt(contestsCache.getYearsNumber() - position - 1);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return ContestsSublistFragment.newInstance(position);
+        }
+
+        @Override
+        public int getCount() {
+            if(contestsCache.getYearsNumber() != lastItemsNum) {
+                lastItemsNum = contestsCache.getYearsNumber();
+                notifyDataSetChanged();
             }
-            return super.onSingleTapConfirmed(event);
+            return contestsCache.getYearsNumber();
         }
 
-        @Override
-        public void onLongPress(MotionEvent event) {
-            super.onLongPress(event);
-        }
-    }
-
-    public void onLoadComplete(OnCompetitionsLoadCompleteEvent event) {
-        swipeRefreshLayout.setRefreshing(false);
-        if (event.isError()) {
-            Toast.makeText(getContext(), "Произошла ошибка загрузки", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    interface CompetitionsListener extends SwipeRefreshLayout.OnRefreshListener{
-
-        void onBackToMain();
-
-        void onCompetitionClicked(Contest contest);
-
-        void onPreregistrationInfoClicked(int f_competition_id);
-
-        void onNominationClicked();
     }
 }

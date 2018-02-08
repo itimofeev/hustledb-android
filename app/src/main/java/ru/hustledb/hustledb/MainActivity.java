@@ -27,7 +27,7 @@ import ru.hustledb.hustledb.ValueClasses.Contest;
 import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity
-        implements ContestsListFragment.CompetitionsListener,
+        implements ContestsSublistFragment.CompetitionsListener,
         SwipeRefreshLayout.OnRefreshListener {
 
     @Inject
