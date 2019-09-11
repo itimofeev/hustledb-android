@@ -1,4 +1,4 @@
-package ru.hustledb.hustledb.Dagger;
+package ru.hustledb.hustledb.DataProviders.LocalDb;
 import com.squareup.sqlbrite.BriteDatabase;
 
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ public class LocalDbModel {
         return (Observable.Transformer<T, T>) schedulersTransformer;
     }
 
-    //Doesnt work if you dont do the cast - dont remove!
+    //Doesn`t work if you don`t do the cast - don`t remove!
     public LocalDbModel() {
         App.getAppComponent().inject(this);
         schedulersTransformer = observable -> ((Observable) observable)

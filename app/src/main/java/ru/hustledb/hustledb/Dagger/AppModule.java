@@ -2,12 +2,11 @@ package ru.hustledb.hustledb.Dagger;
 import android.app.Application;
 import android.content.Context;
 
-import com.squareup.otto.Bus;
-
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import ru.hustledb.hustledb.RxBus;
 
 @Module
 public class AppModule {
@@ -24,5 +23,5 @@ public class AppModule {
     }
     @Provides
     @Singleton
-    public Bus provideBus(){return new Bus();}
+    public RxBus provideBus(){return new RxBus();}
 }

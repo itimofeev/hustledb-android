@@ -2,13 +2,13 @@
 <android.support.v4.widget.SwipeRefreshLayout
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swipeRefreshLayout"
+    android:id="@+id/fclSwipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CompetitionsListFragment">
+    tools:context=".ContestsListFragment">
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/fclRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical" />
 </android.support.v4.widget.SwipeRefreshLayout>
